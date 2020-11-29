@@ -75,7 +75,7 @@ function part2()
     start_equip = 1
     
     queue = PriorityQueue((start_pos, start_equip) => 0)
-    visited = Set((start_pos, start_equip),)
+    visited = Set((start_pos, start_equip), )
     
     i = 0
     
