@@ -39,28 +39,32 @@ function get_moves()
     moves
 end
 
-function part1()
-    points = parse_input("inputfiles/day25/input")
-
-    constellations = 0
-
-    moves = get_moves()
-
-    function dfs(pos)
-        delete!(points, pos)
-        for mov in moves
-            npos = pos + mov
-            if npos in points
-                dfs(npos)
-            end
+function dfs(pos, points, moves)
+    delete!(points, pos)
+    for mov in moves
+        npos = pos + mov
+        if npos in points
+            dfs(npos, points, moves)
         end
     end
+end
+
+function solve(points, moves)
+    constellations = 0
 
     while !isempty(points)
         constellations += 1
 
-        dfs(pop!(points))
+        dfs(pop!(points), points, moves)
     end
 
     constellations
+end
+
+function part1()
+    points = parse_input("inputfiles/day25/input")
+
+    moves = get_moves()
+
+    solve(points, moves)
 end
