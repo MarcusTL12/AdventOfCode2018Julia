@@ -135,7 +135,7 @@ function attack!(attacker::Group, defender::Group)
 end
 
 function remove_dead!(army::Vector{Group})
-    for i in length(army):-1:1
+    for i = length(army):-1:1
         if army[i].units <= 0
             deleteat!(army, i)
         end
@@ -152,19 +152,46 @@ function fight!(imm_sys, infection)
     )
 
     for (att, def) in targets
-        attack!(att, def)
+        if att.units > 0
+            attack!(att, def)
+        end
     end
 
     remove_dead!(imm_sys)
     remove_dead!(infection)
 end
 
-function part1()
-    imm_sys, infection = parse_input("inputfiles/day24/input")
+function tot_units(army::Vector{Group})
+    if isempty(army)
+        0
+    else
+        sum(g.units for g in army)
+    end
+end
+
+function battle!(imm_sys, infection)
+    last_imm = tot_units(imm_sys)
+    last_inf = tot_units(infection)
 
     while !isempty(imm_sys) && !isempty(infection)
         fight!(imm_sys, infection)
+
+        new_imm = tot_units(imm_sys)
+        new_inf = tot_units(infection)
+
+        if last_imm == new_imm && last_inf == new_inf
+            break
+        end
+
+        last_imm = new_imm
+        last_inf = new_inf
     end
+end
+
+function part1()
+    imm_sys, infection = parse_input("inputfiles/day24/input")
+
+    battle!(imm_sys, infection)
 
     surviving_army = if isempty(imm_sys)
         infection
@@ -172,5 +199,43 @@ function part1()
         imm_sys
     end
 
-    sum(g.units for g in surviving_army)
+    tot_units(surviving_army)
+end
+
+function boost_army(army, boost)
+    army = deepcopy(army)
+
+    for group in army
+        group.damage += boost
+    end
+
+    army
+end
+
+function win_with_boost(imm_sys, infection, boost)
+    imm_sys_boosted = boost_army(imm_sys, boost)
+    infection = deepcopy(infection)
+
+    battle!(imm_sys_boosted, infection)
+
+    if !isempty(imm_sys_boosted) && isempty(infection)
+        tot_units(imm_sys_boosted)
+    else
+        0
+    end
+
+    # tot_units(imm_sys_boosted)
+end
+
+function part2()
+    imm_sys, infection = parse_input("inputfiles/day24/input")
+
+    for boost in Iterators.countfrom(1)
+        x = win_with_boost(imm_sys, infection, boost)
+        if x > 0
+            return x
+        end
+    end
+
+    # win_with_boost(imm_sys, infection, boost)
 end
